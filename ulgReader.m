@@ -13,6 +13,8 @@ function fds = ulgReader(file,generate_plots)
 
 tic
 
+%file = 'C:\Users\matt\Downloads\arroyo_crash_20241108.ulg';
+
 if ~exist('file','var')
     [filename, filepath, ~] = uigetfile('*.ulg','Select PX4 ulg file');
     file = fullfile(filepath,filename);
@@ -73,19 +75,20 @@ while fds.idx < len_log_data
     % Read the message header
     [msg_size,msg_type] = read_message_header(fds);
     fds.idx = fds.idx+3;   % Increment the idx based on the size of the header
-    % fprintf('Message Type %s, Size %3d\n',msg_type,msg_size);
-    
+    %fprintf('%10d / %10d | ',fds.idx,len_log_data);
+    %fprintf('Message Type %s, Size %3d\n',msg_type,msg_size);
+
     % Action based on msg_type
     switch (msg_type)
-        case 'B'
+        case 'B'  % Flag bits
             fds = flag_bitset_message(fds);
-        case 'I'
+        case 'I' % Information
             fds = information_message(fds,msg_size);
-        case 'F'
+        case 'F' % Format
             fds = format_message(fds,msg_size);
-        case 'P'
+        case 'P' % Parameter
             fds = param_message(fds,msg_size);
-        case 'M'
+        case 'M' % Multi-information
             fds = message_message(fds,msg_size);
         case 'A'
             fds = add_logged_message(fds,msg_size);
@@ -98,12 +101,15 @@ while fds.idx < len_log_data
         case 'O'
             % Log dropout (let's ignore for now)
             fds.idx = fds.idx + msg_size;
+        case 'Q' % Default parameter message
+            % let's ignore for now
+            fds.idx = fds.idx + msg_size;
         otherwise
             % we've lost out spot, we probably need to just
             % read until we find something we recognise
             fprintf('Don''t recognise type <<%s>>\n',msg_type);
             fds.idx = fds.idx + 1;
-            keyboard
+            %keyboard
             
     end
     
@@ -532,7 +538,7 @@ switch (param_type)
     case 'uint32_t'; value = typecast(value_data,'uint32');
     case 'int32_t';  value = typecast(value_data,'int32');
     case 'float';    value = typecast(value_data,'single');
-    otherwise; keyboard
+    otherwise; keyboard; return;
 end
 
 % Store the param in the param field of the fds
@@ -567,15 +573,20 @@ key = char(fds.log_data(fds.idx:fds.idx+key_len-1)); ...
 if strcmp(msg_name(1),' '); msg_name(1) = []; end
 if strcmp(msg_name(1),'_'); msg_name(1) = []; end
 
-msg_len = sscanf(key,'char[%d]');
+msg_len = sscanf(key, '%*[^[][%d]');
 
 msg = fds.log_data(fds.idx:fds.idx+msg_len-1); ...
     fds.idx = fds.idx + msg_len;
 
 % Store the message
 if ~isfield(fds.perf_msgs,msg_name)
-    % fprintf('\tAdding message name %s\n',msg_name);
-    fds.perf_msgs.(msg_name) = {};
+    fprintf('\tAdding message name %s\n',msg_name);
+    try
+        fds.perf_msgs.(msg_name) = {};
+    catch
+        keyboard
+        return
+    end
 end
 
 % Store the message
@@ -854,6 +865,12 @@ if n_samples > 0
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
                 new_data   = typecast(fds.log_data(tempLocs),'double')';
                 loc_offset = loc_offset + n_bytes;
+            
+            case 'char'
+                continue
+                tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                new_data   = typecast(fds.log_data(tempLocs),'char')';
+                loc_offset = loc_offset + n_bytes;                
                 
             otherwise
                 fprintf('Unrecognised data type\n');
