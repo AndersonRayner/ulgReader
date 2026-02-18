@@ -231,12 +231,14 @@ fds.idx = fds.idx+msg_size-key_len-1;
 
 switch (msg_type)
     case 'uint32_t'; value = typecast(value_data,'uint32'); value = num2str(value);
+    case 'uint64_t'; value = typecast(value_data,'uint64_t'); value = num2str(value);
     case 'int32_t';  value = typecast(value_data,'int32');  value = num2str(value);
     case 'float';    value = typecast(value_data,'single'); value = num2str(value);
     otherwise
         if contains(msg_type,'char')
             value = char(value_data);
         else
+            fprintf('Unrecognised type %s\n',msg_type);
             keyboard
         end
 end
