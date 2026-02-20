@@ -814,57 +814,122 @@ if n_samples > 0
         switch (data_type)
             case 'bool'
                 tempLocs   = locs+loc_offset;
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),1)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/1)*1);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'uint8')';
                 loc_offset = loc_offset + n_bytes;
                 
-                
             case 'uint8_t'
                 tempLocs   = locs+loc_offset;
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),1)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/1)*1);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'uint8')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'int8_t'
                 tempLocs   = locs+loc_offset;
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),1)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/1)*1);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'int8')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'uint16_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),2)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/2)*2);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'uint16')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'int16_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),2)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/2)*2);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'int16')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'uint32_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),4)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/4)*4);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'uint32')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'int32_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),4)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/4)*4);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'int32')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'uint64_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),8)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/8)*8);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'uint64')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'int64_t'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),8)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/8)*8);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'int64')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'float'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),4)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/4)*4);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'single')';
                 loc_offset = loc_offset + n_bytes;
                 
             case 'double'
                 tempLocs   = reshape((locs + (0:n_bytes-1))'+loc_offset,1,[]);
+                % Handle if log cut off mis-message
+                tempLocs(tempLocs > size(fds.log_data,2)) = [];
+                if rem(size(tempLocs,2),8)
+                    tempLocs = tempLocs(1:floor(size(tempLocs,2)/8)*8);
+                end
+                % Extract data
                 new_data   = typecast(fds.log_data(tempLocs),'double')';
                 loc_offset = loc_offset + n_bytes;
             
@@ -884,6 +949,10 @@ if n_samples > 0
         
         % Add this field's data to the main struct's data
         % matrix
+        if size(new_data,1) ~= size(data,1)
+            new_data = [new_data;nan];
+%             keyboard
+        end
         data(:,jj) = new_data;
         
     end
